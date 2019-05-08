@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+* {box-sizing: border-box}
+
+/* Set height of body and the document to 100% */
+body, html {
+  height: 125%;
+  margin: 0;
+  font-family: Arial;
+}
+
+.header {
+  padding: 25px;
+  text-align: center;
+  background-image: url("world_banner.jpg");
+  color: white;
+}
+
+.fakeimg {
+  width: 100%;
+  padding: 20px;
+}
+
+/* Style tab links */
+.tablink {
+  background-color: #555;
+  color: white;
+  float: left;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  padding: 14px 16px;
+  font-size: 17px;
+  width: 20%;
+}
+
+.tablink:hover {
+  background-color: #777;
+}
+
+/* Style the tab content (and add height:100% for full page content) */
+.tabcontent {
+  color: Black;
+  display: none;
+  padding: 100px 20px;
+  height: 100%;
+}
+
+/* Footer */
+.footer {
+  padding: 20px;
+  text-align: center;
+  background: #ddd;
+}
+
+
+#Home {background-color: white;}
+#News {background-color: white;}
+#Contact {background-color: white;}
+#About {background-color: white;}
+#Original {background-color: white;}
+</style>
+</head>
+
+
+<body>
+
+<!-- Header -->
+<div class="header">
+  <h1>Quality of Life Across the Globe</h2>
+  <p><b>By Matthew Parker, Jeremiah Albright, and Adrian Caberos</b></p>
+</div>
+
+<button class="tablink" onclick="openPage('Home', this, 'lightblue')" id="defaultOpen">People of the World</button>
+<button class="tablink" onclick="openPage('News', this, 'green')">Affects of Money</button>
+<button class="tablink" onclick="openPage('Contact', this, 'blue')">Affects of Love</button>
+<button class="tablink" onclick="openPage('About', this, 'orange')">Affects of War</button>
+<button class="tablink" onclick="openPage('Original', this, 'silver')">The World</button>
+
+
+<div id="Home" class="tabcontent">
+  <h1>We are All in this Together</h1>
+  <p>The world houses more than 7.7 Billion people</p>
+  <p>Pop culture has regularly compared the growth of our species to that of a uncontrolable Virus, </p>
+  <p>constantly growing without a concern of natural resources or available space.</p>
+  <p>But there are many limiting factors that will prevent the Human species from constantly increasing</P>
+  <p>Limited Access to resources, man-made wars, and limiting reproduction are a few ways that</p>
+  <p>the human population is already limiting this supposed <i>unlimited</i> growth.</p>
+
+<script type="text/javascript" src="https://d3js.org/d3.v4.min.js"></script>
+
+    <link rel="stylesheet" type="text/css"
+      href="https://fonts.googleapis.com/css?family=Open+Sans:400,600">
+    <link rel="stylesheet" type="text/css" href="sequences.css"/>
+ <p>This is a pie chart that demonstates the worlds over-all population for a particular year, and is segregated by contintents, and their countries</p>
+
+ </head>
+  <body>
+    <div id="main">
+      <div id="sequence"></div>
+      <div id="chart">
+        <div id="explanation" style="visibility: hidden;">
+          <span id="percentage"></span><br/>
+        % of Total World Population of 7,714,576,923
+        </div>
+      </div>
+    </div>
+    <div id="sidebar">
+      <input type="checkbox" id="togglelegend"> Legend<br/>
+      <div id="legend" style="visibility: hidden;"></div>
+    </div>
+    <script type="text/javascript" src="sequences.js"></script>
+    <script type="text/javascript">
+      // Hack to make this example display correctly in an iframe on bl.ocks.org
+      d3.select(self.frameElement).style("height", "700px");
+  </script> 
+
+
+</div>
+
+<div id="News" class="tabcontent">
+  <h1>Cha-Ching</h1>
+  <P>Money can be a major factor of a population's growth, lifespan, and overall well being</P>
+  <p>In essence, money represents that limited resources that we mentioned on the previous page.</p>
+  <p> We can make this assumption since Money/currency/dinero can be used to allocate food, water, shelter, etc.</p>
+  <p>All  of which are resources that can be consumed, or used up, by human beings.</p>
+  <p>We are able to interactively see how a country's wealth can have a direct affect on their life expectancy.</p>
+
+  <img src="poverty.jpg">
+
+  <p>As we can see in the visual below, it was not until after the 1970s that we transitioned from having</p>
+  <p>the majority of the population being extremely under priveledged.</p>
+
+  <img src="poverty.jpg">
+
+</div>
+
+<div id="Contact" class="tabcontent">
+  <h1>Don't Go Breaking My Heart</h1>
+  <p>One of the biggest ways we can see if a population is increasing or decreasing is by viewing it's fertility level</p>
+  <p><b>Work on this!!!!!!!!!!!!!!!!1</b></p>
+  <p>In the graphic below, we can see how the increased use of contraceptives can lower the average fertility of individual countries</p>
+  <img src="contraceptive.jpg">
+  <p>Besides proving that contraceptives work, this graphic also allows us to see how it can affect the fertility rates.</p>
+</div>
+
+<div id="About" class="tabcontent">
+  <h1>War, What is it Good For?</h1>
+  <p>In the graphic below we can see how much death has been caused by Wars across the Globe</p>
+  <p>The Region that has been hit the hardest is Oceanic, which includes Australia, PHillipines, Pacific Islands, etc.</p>
+  <img src="war.jpg">
+</div>
+
+<div id="Original" class="tabcontent">
+  <h1>Hey World (Don't Give Up)</h1>
+  <p>In the graphic below, we are able to see each country's individual population, fertility, and Average Lifespan</p>
+  <p>We can use this statistics to see where growth is being inhibited,</p>
+  <p>Where average lifespan is exceeding our expectations,</p>
+  <p>And where the highest populated areas around the globe are.</p>
+
+<iframe src="index3.html" width ="1000" height ="1000"></iframe>
+
+
+</div>
+
+<script>
+function openPage(pageName,elmnt,color) {
+  var i, tabcontent, tablinks;
+  tabcontent = document.getElementsByClassName("tabcontent");
+  for (i = 0; i < tabcontent.length; i++) {
+    tabcontent[i].style.display = "none";
+  }
+  tablinks = document.getElementsByClassName("tablink");
+  for (i = 0; i < tablinks.length; i++) {
+    tablinks[i].style.backgroundColor = "";
+  }
+  document.getElementById(pageName).style.display = "block";
+  elmnt.style.backgroundColor = color;
+}
+
+// Get the element with id="defaultOpen" and click on it
+document.getElementById("defaultOpen").click();
+</script>
+   
+</body>
+
+
+</html> 

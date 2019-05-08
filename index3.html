@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<!-- 	updated		3/27/19					-->
+<!-- 	color the countries with option of population,fertility,life expectancy					-->
+
+<style>
+//https://gist.github.com/micahstubbs/8e15870eb432a21f0bc4d3d527b2d14f
+  .names {
+  fill: none;
+  stroke: #fff;
+  stroke-linejoin: round;
+  }
+
+    /* Tooltip CSS */
+    .d3-tip {
+    line-height: 1.5;
+    font-weight: 400;
+    font-family:"avenir next", Arial, sans-serif;
+    padding: 6px;
+    background: rgba(0, 0, 0, 0.6);
+    color: #FFA500;
+    border-radius: 1px;
+    pointer-events: none;
+    }
+
+    /* Creates a small triangle extender for the tooltip */
+    .d3-tip:after {      
+      box-sizing: border-box;
+      display: inline;
+      font-size: 8px;
+      width: 100%;
+      line-height: 1.5;
+      color: rgba(0, 0, 0, 0.6);
+      position: absolute;
+      pointer-events: none;
+      
+    }
+
+    /* Northward tooltips */
+    .d3-tip.n:after {
+      content: "\25BC";
+      margin: -1px 0 0 0;
+      top: 100%;
+      left: 0;
+      text-align: center;
+    }
+
+    /* Eastward tooltips */
+    .d3-tip.e:after {
+      content: "\25C0";
+      margin: -4px 0 0 0;
+      top: 50%;
+      left: -8px;
+    }
+
+    /* Southward tooltips */
+    .d3-tip.s:after {
+      content: "\25B2";
+      margin: 0 0 1px 0;
+      top: -8px;
+      left: 0;
+      text-align: center;
+    }
+
+    /* Westward tooltips */
+    .d3-tip.w:after {
+      content: "\25B6";
+      margin: -4px 0 0 -1px;
+      top: 50%;
+      left: 100%;
+    }
+
+/*    text{
+      pointer-events:none;
+    }*/
+
+    .details{
+      color:white;
+    }
+
+</style>
+<body>
+ 
+<script type="text/javascript" src="https://d3js.org/d3.v4.min.js"></script>
+<script type="text/javascript"src="https://d3js.org/queue.v1.min.js"></script>
+<script type="text/javascript" src="https://d3js.org/topojson.v1.min.js"></script>
+<script type="text/javascript"src="d3-tip.js"></script>
+
+<!------------------------------------------------------------------------------------------------------------------------->
+<div class="slidecontainer">
+  <p>Year: <span id="demo"></span></p>
+  <input type="range" min="1960" max="2016" value="1960" class="slider" id="myRange">
+
+</div>
+<!------------------------------------------------------------------------------------------------------------------------->
+
+<div class="button" id ="spoiler">
+<button id="popC" name="subject" type="submit" value="1" onclick="pColor()">Population</button>
+<button id ="fertC"name="subject" type="submit" value="2"onclick="fColor()">Fertility</button>
+<button id ="lifeC"name="subject" type="submit" value="3"onclick="lColor()">Life Expectancy</button>
+</div>
+
+<h1 align="center" id="popH" value="1" ></h1>
+<h1 align="center" id="fertH" value="2"></h1>
+<h1 align="center" id="lifeH" value="3"></h1>
+
+
+
+<!------------------------------------------------------------------------------------------------------------------------->
+
+<script>
+//			1)		slider/scroll through years
+///////////////////////////////////////////////
+var slider = document.getElementById("myRange");
+var output = document.getElementById("demo");
+output.innerHTML = slider.value;
+var  y=1960;
+var mode=1;
+////////////////////////////////////////////////////////////
+//color mode for 3 buttons
+
+
+function pColor() {
+  document.getElementById("popH").innerHTML="World Population";
+  document.getElementById("fertH").innerHTML="";
+  document.getElementById("lifeH").innerHTML="";
+
+mode=1;
+  select(mode);
+}
+
+function fColor() {
+ document.getElementById("fertH").innerHTML="World Fertility Rates";
+ document.getElementById("popH").innerHTML="";
+ document.getElementById("lifeH").innerHTML="";
+
+mode=2;
+  select(mode);
+}
+function lColor() {
+ document.getElementById("lifeH").innerHTML="World Life Expectancy"; 
+ document.getElementById("fertH").innerHTML = "";
+ document.getElementById("popH").innerHTML = "";
+ 
+ mode=3;
+  select(mode);
+}
+
+
+
+//////////////////////////////////////////
+slider.oninput = function() {
+  output.innerHTML = this.value; 	//this is current scroll year selected
+y=output.innerHTML; 					//global variable y is the value of scroll year (use global variable y later to select from dataSet wanted year)
+
+select(mode);										//		2) scroll has been moved, notify page to change data , from function select()
+}
+
+var format = d3.format(","); //this puts in commas into numbers (say population of 10000 becomes 10,000)
+
+// Set tooltips
+var tip = d3.tip()
+            .attr('class', 'd3-tip')
+            .offset([100, 150])
+            .html(function(d) {
+              return "<strong>Country: </strong><span class='details'>" + d.properties.name + "<br></span>" + "<strong>Population: </strong><span class='details'>" + format(d.population) +"<br></span>" +"<strong>Fertility: </strong><span class='details'>" + format(d.fertility)+"<br></span><strong>Life Span: </strong><span class='details'>" + format(d.life_expectancy)+"<br></span>" ;})
+
+var margin = {top: 0, right: 0, bottom: 0, left: 0},
+            width = 960 - margin.left - margin.right,
+            height = 500 - margin.top - margin.bottom;
+
+			
+			
+		
+			
+			
+			
+			
+			
+			
+											
+
+var colorPo = d3.scaleThreshold()
+    .domain([10000,100000,500000,1000000,5000000,10000000,50000000,100000000,500000000,1500000000])
+    .range(["rgb(255,255,255)", "rgb(255,229,229)", "rgb(255,204,204)", "rgb(255,178,178)", "rgb(255,153,153)", "rgb(255,127,127)","rgb(255,102,102)","rgb(255,76,76)","rgb(255,51,51)","rgb(255,0,0)"]);
+
+
+
+console.log(mode);
+
+var colorFert = d3.scaleThreshold()
+    .domain([0,1,2,3,4,5,6,7,8,9])
+    .range(["rgb(255,255,255)", "rgb(229,255,233)", "rgb(204,255,211)", "rgb(178,255,189)", "rgb(153,255,168)", "rgb(127,255,146)","rgb(102,255,124)","rgb(76,255,103)","rgb(51,255,81)","rgb(25,204,59)"]);
+
+
+
+
+
+
+
+var colorAge = d3.scaleThreshold()
+    .domain([20,30,40,50,60,70,80,90])
+    .range(["rgb(255,255,255)", "rgb(229,237,255)", "rgb(178,202,255)", "rgb(127,166,255)", "rgb(76,131,255)", "rgb(0,78,255)","rgb(0,62,204)","rgb(0,47,153)"]);
+
+
+
+
+
+					
+							
+
+var path = d3.geoPath();
+
+var svg = d3.select("body")
+            .append("svg")
+            .attr("width", width)
+            .attr("height", height)
+            .append('g')
+            .attr('class', 'map');
+
+var projection = d3.geoMercator()
+                   .scale(130)
+                  .translate( [width / 2, height / 1.5]);
+
+var path = d3.geoPath().projection(projection);
+//in case slider hasnt been moved since webpage loaded
+svg.call(tip);
+
+queue()
+    .defer(d3.json, "world_countries.json")
+    .defer(d3.tsv, "dataSet.tsv")
+    .await(ready);
+	
+	/////////////////////////////////////////////////////////////////////////////////////////
+	//3) inew page of dataset (unchanged from original)
+function select(mode){
+svg.call(tip);
+
+queue()
+    .defer(d3.json, "world_countries.json")
+    .defer(d3.tsv, "dataSet.tsv")
+    .await(ready); //go into ready below
+	
+
+}
+//////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+//5)
+function ready(error, data, population) {//note: population variable being passed is actually an array of the dataset, row by row, and not actually just the population column
+
+//make an array for each column, we want the selected year only and not all
+  var populationById = {};
+  var fertilityById = {};
+  var lifeById = {};
+  var yearById = {};
+  
+  
+  /////////////////////////////////////////////////
+    console.log(y); //console prints year, for debugging issue
+
+
+
+ //////////////////////////////////////////////////
+  
+  var a=0;
+  var p =0;
+  var pop={};
+  population.forEach(function(d) { if(d.Years==y){ populationById[d.id] = +  d.Population;  fertilityById[d.id]=+d.fertility; lifeById[d.id] =+d.life_expectancy; yearById[d.id] =+d.Years; }});
+      
+  data.features.forEach(function(d) { d.population = populationById[d.id]; d.fertility =fertilityById[d.id] ;    d.life_expectancy = lifeById[d.id];    d.Years = yearById[d.id]; });
+
+ 
+ 
+ 
+ 
+ if(mode==1){
+	
+ svg.append("g")
+      .attr("class", "countries")
+    .selectAll("path")
+      .data(data.features)
+    .enter().append("path")
+      .attr("d", path)
+	  
+	  
+	  
+      .style("fill", function(d) { return colorPo(populationById[d.id]); })
+
+	  
+	  
+	  
+	  
+      .style('stroke', 'white')
+      .style('stroke-width', 1.5)
+      .style("opacity",0.8)
+      // tooltipsfill
+        .style("stroke","white")
+        .style('stroke-width', 0.3)
+        .on('mouseover',function(d){
+          tip.show(d);
+
+          d3.select(this)
+            .style("opacity", 1)
+            .style("stroke","black")
+            .style("stroke-width",3);
+        })
+        .on('mouseout', function(d){
+          tip.hide(d);
+		  
+//code below
+//-stroke:when mouse hovers over country
+//-stroke width: width of the border on country being hovered
+//fill, when mouse stops hovering a country, fill country this color
+          d3.select(this)
+            .style("opacity", 0.8)
+            .style("stroke","white")
+			.style("fill","whtie")
+            .style("stroke-width",0.9);
+        });
+
+  svg.append("path")
+      .datum(topojson.mesh(data.features, function(a, b) { return a.id !== b.id; }))
+       // .datum(topojson.mesh(data.features, function(a, b) { return a !== b; }))
+      .attr("class", "names")
+      .attr("d", path);
+}
+	
+	
+	
+ 
+  if (mode==2){
+ 
+ 
+ svg.append("g")
+      .attr("class", "countries")
+    .selectAll("path")
+      .data(data.features)
+    .enter().append("path")
+      .attr("d", path)
+	  
+	  
+	  
+      .style("fill", function(d) { return colorFert(fertilityById[d.id]); })
+
+	  
+	  
+	  
+	  
+      .style('stroke', 'white')
+      .style('stroke-width', 1.5)
+      .style("opacity",0.8)
+      // tooltipsfill
+        .style("stroke","white")
+        .style('stroke-width', 0.3)
+        .on('mouseover',function(d){
+          tip.show(d);
+
+          d3.select(this)
+            .style("opacity", 1)
+            .style("stroke","black")
+            .style("stroke-width",3);
+        })
+        .on('mouseout', function(d){
+          tip.hide(d);
+		  
+//code below
+//-stroke:when mouse hovers over country
+//-stroke width: width of the border on country being hovered
+//fill, when mouse stops hovering a country, fill country this color
+          d3.select(this)
+            .style("opacity", 0.8)
+            .style("stroke","white")
+			.style("fill","whtie")
+            .style("stroke-width",0.9);
+        });
+
+  svg.append("path")
+      .datum(topojson.mesh(data.features, function(a, b) { return a.id !== b.id; }))
+       // .datum(topojson.mesh(data.features, function(a, b) { return a !== b; }))
+      .attr("class", "names")
+      .attr("d", path);
+}
+
+	
+ if(mode==3){
+ 
+	
+ svg.append("g")
+      .attr("class", "countries")
+    .selectAll("path")
+      .data(data.features)
+    .enter().append("path")
+      .attr("d", path)
+	  
+	  
+	  
+      .style("fill", function(d) { return colorAge(lifeById[d.id]); })
+
+	  
+	  
+	  
+	  
+      .style('stroke', 'white')
+      .style('stroke-width', 1.5)
+      .style("opacity",0.8)
+      // tooltipsfill
+        .style("stroke","white")
+        .style('stroke-width', 0.3)
+        .on('mouseover',function(d){
+          tip.show(d);
+
+          d3.select(this)
+            .style("opacity", 1)
+            .style("stroke","black")
+            .style("stroke-width",3);
+        })
+        .on('mouseout', function(d){
+          tip.hide(d);
+		  
+//code below
+//-stroke:when mouse hovers over country
+//-stroke width: width of the border on country being hovered
+//fill, when mouse stops hovering a country, fill country this color
+          d3.select(this)
+            .style("opacity", 0.8)
+            .style("stroke","white")
+			.style("fill","whtie")
+            .style("stroke-width",0.9);
+        });
+
+  svg.append("path")
+      .datum(topojson.mesh(data.features, function(a, b) { return a.id !== b.id; }))
+       // .datum(topojson.mesh(data.features, function(a, b) { return a !== b; }))
+      .attr("class", "names")
+      .attr("d", path);
+}
+	
+
+ 
+ 
+ }
+
+
+</script>
+</body>
+<div class="legend1" onclick="">
+  <p>Color Key (each number represents 10,000 people)
+    <div id="legend"></div>
+    <script type="text/javascript">
+
+      var w = 600, h = 50;
+      
+      var key = d3.select("#legend")
+        .append("svg")
+        .attr("width", w)
+        .attr("height", h);
+  
+      var legend = key.append("defs")
+        .append("svg:linearGradient")
+        .attr("id", "gradient")
+        .attr("x1", "0%")
+        .attr("y1", "100%")
+        .attr("x2", "100%")
+        .attr("y2", "100%")
+        .attr("spreadMethod", "pad");
+
+      legend.append("stop")
+        .attr("offset", "0%")
+        .attr("stop-color", "#ffffff")
+        .attr("stop-opacity", 1);
+
+      legend.append("stop")
+        .attr("offset", "10%")
+        .attr("stop-color", "#ffe5e5")
+        .attr("stop-opacity", 1);
+  
+      legend.append("stop")
+        .attr("offset", "20%")
+        .attr("stop-color", "#ffcccc")
+        .attr("stop-opacity", 1);
+
+      legend.append("stop")
+        .attr("offset", "30%")
+        .attr("stop-color", "#ffb2b2")
+        .attr("stop-opacity", 1);
+  
+      legend.append("stop")
+        .attr("offset", "40%")
+        .attr("stop-color", "#ff9999")
+        .attr("stop-opacity", 1);
+  
+      legend.append("stop")
+        .attr("offset", "50%")
+        .attr("stop-color", "#ff7f7f")
+        .attr("stop-opacity", 1);
+
+      legend.append("stop")
+        .attr("offset", "60%")
+        .attr("stop-color", "#ff6666")
+        .attr("stop-opacity", 1);
+
+      legend.append("stop")
+        .attr("offset", "70%")
+        .attr("stop-color", "#ff4c4c")
+        .attr("stop-opacity", 1);
+
+      legend.append("stop")
+        .attr("offset", "80%")
+        .attr("stop-color", "#ff3333")
+        .attr("stop-opacity", 1);
+
+      legend.append("stop")
+        .attr("offset", "90%")
+        .attr("stop-color", "#ff0000")
+        .attr("stop-opacity", 1);
+  
+      legend.append("stop")
+        .attr("offset", "100%")
+        .attr("stop-color", "#ff0000")
+        .attr("stop-opacity", 1);
+  
+      key.append("rect")
+        .attr("width", w)
+        .attr("height", h - 30)
+        .style("fill", "url(#gradient)")
+        .attr("transform", "translate(0,10)");
+  
+      var y = d3.scaleLinear()
+        .range([600, 0])
+        .domain([175000, 7]);
+  
+      var yAxis = d3.axisBottom()
+        .scale(y)
+        .ticks(7);
+  
+      key.append("g")
+        .attr("class", "y axis")
+        .attr("transform", "translate(0,30)")
+        .call(yAxis)
+        .append("text")
+        .attr("transform", "rotate(-90)")
+        .attr("y", 0)
+        .attr("dy", ".71em")
+        .style("text-anchor", "end")
+        .text("axis title");
+      </script>
+</div>
+
+<div class="legend2">
+    <p>Fertility (Average kids per household per year)
+      <div id="legend2"></div>
+      <script type="text/javascript">
+  
+        var w = 600, h = 50;
+        
+        var key = d3.select("#legend2")
+          .append("svg")
+          .attr("width", w)
+          .attr("height", h);
+    
+        var legend2 = key.append("defs")
+          .append("svg:linearGradient")
+          .attr("id", "gradient2")
+          .attr("x1", "0%")
+          .attr("y1", "100%")
+          .attr("x2", "100%")
+          .attr("y2", "100%")
+          .attr("spreadMethod", "pad");
+  
+        legend2.append("stop")
+          .attr("offset", "0%")
+          .attr("stop-color", "#ffffff")
+          .attr("stop-opacity", 1);
+  
+        legend2.append("stop")
+          .attr("offset", "10%")
+          .attr("stop-color", "#e5ffe9")
+          .attr("stop-opacity", 1);
+    
+        legend2.append("stop")
+          .attr("offset", "20%")
+          .attr("stop-color", "#ccffd3")
+          .attr("stop-opacity", 1);
+  
+        legend2.append("stop")
+          .attr("offset", "30%")
+          .attr("stop-color", "#b2ffbd")
+          .attr("stop-opacity", 1);
+    
+        legend2.append("stop")
+          .attr("offset", "40%")
+          .attr("stop-color", "#99ffa8")
+          .attr("stop-opacity", 1);
+  
+        legend2.append("stop")
+          .attr("offset", "50%")
+          .attr("stop-color", "#7fff92")
+          .attr("stop-opacity", 1);
+  
+        legend2.append("stop")
+          .attr("offset", "60%")
+          .attr("stop-color", "#66ff7c")
+          .attr("stop-opacity", 1);
+  
+        legend2.append("stop")
+          .attr("offset", "70%")
+          .attr("stop-color", "#4cff67")
+          .attr("stop-opacity", 1);
+  
+        legend2.append("stop")
+          .attr("offset", "80%")
+          .attr("stop-color", "#33ff51")
+          .attr("stop-opacity", 1);
+    
+        legend2.append("stop")
+          .attr("offset", "90%")
+          .attr("stop-color", "#19cc3b")
+          .attr("stop-opacity", 1);
+
+
+        legend2.append("stop")
+          .attr("offset", "100%")
+          .attr("stop-color", "#19cc3b")
+          .attr("stop-opacity", 1);
+    
+        key.append("rect")
+          .attr("width", w)
+          .attr("height", h - 30)
+          .style("fill", "url(#gradient2)")
+          .attr("transform", "translate(0,10)");
+    
+        var y = d3.scaleLinear()
+          .range([600, 0])
+          .domain([10.5, 0.5]);
+    
+        var yAxis = d3.axisBottom()
+          .scale(y)
+          .ticks(7);
+    
+        key.append("g")
+          .attr("class", "y axis")
+          .attr("transform", "translate(0,30)")
+          .call(yAxis)
+          .append("text")
+          .attr("transform", "rotate(-90)")
+          .attr("y", 0)
+          .attr("dy", ".71em")
+          .style("text-anchor", "end")
+          .text("axis title");
+        </script>
+</div>
+
+<div class="legend3" >
+      <p>Average Life Span (in years)
+        <div id="legend3"></div>
+        <script type="text/javascript">
+    
+          var w = 600, h = 50;
+          
+          var key = d3.select("#legend3")
+            .append("svg")
+            .attr("width", w)
+            .attr("height", h);
+      
+          var legend3 = key.append("defs")
+            .append("svg:linearGradient")
+            .attr("id", "gradient3")
+            .attr("x1", "0%")
+            .attr("y1", "100%")
+            .attr("x2", "100%")
+            .attr("y2", "100%")
+            .attr("spreadMethod", "pad");
+    
+          legend3.append("stop")
+            .attr("offset", "0%")
+            .attr("stop-color", "#ffffff")
+            .attr("stop-opacity", 1);
+    
+          legend3.append("stop")
+            .attr("offset", "10%")
+            .attr("stop-color", "#e5edff")
+            .attr("stop-opacity", 1);
+      
+          legend3.append("stop")
+            .attr("offset", "25%")
+            .attr("stop-color", "#b2caff")
+            .attr("stop-opacity", 1);
+    
+          legend3.append("stop")
+            .attr("offset", "40%")
+            .attr("stop-color", "#7fa6ff")
+            .attr("stop-opacity", 1);
+      
+          legend3.append("stop")
+            .attr("offset", "55%")
+            .attr("stop-color", "#4c83ff")
+            .attr("stop-opacity", 1);
+      
+          legend3.append("stop")
+            .attr("offset", "70%")
+            .attr("stop-color", "#004eff")
+            .attr("stop-opacity", 1);
+    
+          legend3.append("stop")
+            .attr("offset", "85%")
+            .attr("stop-color", "#003ecc")
+            .attr("stop-opacity", 1);
+    
+          legend3.append("stop")
+            .attr("offset", "100%")
+            .attr("stop-color", "#002f99")
+            .attr("stop-opacity", 1);
+    
+          key.append("rect")
+            .attr("width", w)
+            .attr("height", h - 30)
+            .style("fill", "url(#gradient3)")
+            .attr("transform", "translate(0,10)");
+      
+          var y = d3.scaleLinear()
+            .range([600, 0])
+            .domain([95, 2]);
+      
+          var yAxis = d3.axisBottom()
+            .scale(y)
+            .ticks(7);
+      
+          key.append("g")
+            .attr("class", "y axis")
+            .attr("transform", "translate(0,30)")
+            .call(yAxis)
+            .append("text")
+            .attr("transform", "rotate(-90)")
+            .attr("y", 0)
+            .attr("dy", ".71em")
+            .style("text-anchor", "end")
+            .text("axis title");
+          </script>
+  </div>
+ <a href="description.html">description</a> 
+</html>
